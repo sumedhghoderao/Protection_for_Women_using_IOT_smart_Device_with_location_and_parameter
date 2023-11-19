@@ -1,0 +1,187 @@
+from __future__ import print_function
+import face_recognition
+import cv2
+import numpy as np    
+from time import sleep          
+import RPi.GPIO as GPIO
+import glob
+import pymysql as mdb
+import pygmaps
+global msg1
+global name
+known_face_encodings=[]
+known_face_names=[]
+print('Loading dataset')
+video_capture = cv2.VideoCapture(0)
+print('Loading dataset')
+for img in glob.glob("*.jpeg"):
+    #print(img)
+    f1_image = face_recognition.load_image_file(img)
+    f1_face_encoding = face_recognition.face_encodings(f1_image)[0]
+    known_face_encodings.append(f1_face_encoding)
+name,_=img.split('.')
+    known_face_names.append(name)
+print('Loading complete')
+face_locations = []
+face_encodings = []
+face_names = []
+process_this_frame = True
+
+
+import time
+import board
+import busio
+import adafruit_adxl34x
+import serial
+import utm
+import pynmea2
+from geopy.geocoders import Nominatim
+geolocator = Nominatim(user_agent='sur5gk@gmail.com')
+i2c = busio.I2C(board.SCL, board.SDA)
+accelerometer = adafruit_adxl34x.ADXL345(i2c)
+def push1(a,b):            
+            con = mdb.connect('localhost', \
+                              'admin', \
+                              'root', \
+                              'tms' );
+            cur = con.cursor()
+cur.execute("TRUNCATE TABLE `sens`")
+            cur.execute("""INSERT INTO sens(location,sl) \
+                       VALUES(%s,%s)""", (a,b))            
+            con.commit()
+port = serial.Serial("/dev/ttyAMA0", baudrate=9600, timeout=1)
+   
+
+def sms(msg):
+        port.write(str.encode('AT'+'\r\n'))
+
+
+        time.sleep(2)
+port.write(str.encode('ATE0'+'\r\n'))
+        time.sleep(2)
+
+        port.write(str.encode('AT+CMGF=1'+'\r\n'))
+        time.sleep(2)
+
+        port.write(str.encode('AT+CNMI=2,1,0,0,0'+'\r\n'))
+        time.sleep(2)
+
+        # Sending a message to a particular Number
+port.write(str.encode('AT+CMGS="9960892224"'+'\r\n'))
+
+        time.sleep(2)
+
+        #port.write(str.encode("Emergency at:%s " % (rockel)+'\r\n'))  # Messa$
+        port.write(str.encode("Emergency "+'\r\n'))
+        time.sleep(2)
+        port.write(str.encode("\x1A")) # Enable to send SMS
+
+        time.sleep(2)
+
+        print ('sms done')
+
+def parseGPS(str1):
+    global msg1
+    if str1.find('GGA') > 0:
+        msg = pynmea2.parse(str1)
+        #print "Timestamp: %s -- Lat: %s %s -- Lon: %s %s -- Altitude: %s %s" $
+        
+        lat1=int(msg.lat[0:2])
+        lat2=float(msg.lat[2:9])
+lat2=lat2/60
+        lat=lat1+lat2
+        
+        if int(msg.lon[0:1])==int(0):            
+            lon1=int(msg.lon[0:3])
+            lon2=float(msg.lon[3:11])
+lon2=lon2/60
+            lon=lon1+lon2
+        else:
+            lon1=int(msg.lon[0:2])
+            lon2=float(msg.lon[2:10])
+            lon2=lon2/60
+lon=lon1+lon2
+        #print lat,lon
+        var=("%s,%s" % (lat,lon))  # Message
+        location = geolocator.reverse(var)
+        msg1=(location.address)
+        print (msg1)
+mymap = pygmaps.maps(lat,lon, 16)
+        mymap.addpoint(lat,lon, "#00FF00")
+        mymap.draw('mymap.html')
+
+msg1=''
+while True:
+    try:
+        str1 = (port.readline()).decode()
+        parseGPS(str1)
+    except:
+        print('e')
+ x,y,z=accelerometer.acceleration
+    if(y>0):
+        print('Alert')
+        sms('Alert')
+    ret, frame = video_capture.read()
+
+    small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
+
+    
+    rgb_small_frame = small_frame[:, :, ::-1]
+
+    process_this_frame=1 
+    if process_this_frame:
+face_locations = face_recognition.face_locations(rgb_small_frame)
+        face_encodings = face_recognition.face_encodings(rgb_small_frame, face$
+
+        face_names = []
+        for face_encoding in face_encodings:
+
+            matches = face_recognition.compare_faces(known_face_encodings, fac$
+            name = "Unknown"
+if True in matches:
+                first_match_index = matches.index(True)
+                name = known_face_names[first_match_index]
+
+            face_names.append(name)
+
+
+    process_this_frame = not process_this_frame
+for (top, right, bottom, left), name in zip(face_locations, face_names):
+
+        top *= 4
+        right *= 4
+        bottom *= 4
+        left *= 4
+
+
+        cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
+
+
+        cv2.rectangle(frame, (left, bottom - 35), (right, bottom), (0, 0, 255)$
+          font = cv2.FONT_HERSHEY_DUPLEX
+        cv2.putText(frame, name, (left + 6, bottom - 6), font, 1.0, (255, 255,$
+       
+           
+      
+    cv2.imshow('Video', frame)
+    
+    push1(msg1,name) 
+
+    
+   
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+video_capture.release()
+cv2.destroyAllWindows()
+
+
+
+
+
+
+
+
+
+
+

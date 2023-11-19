@@ -1,0 +1,88 @@
+
+1.HEADER CODE:
+
+
+<div class="header-main">
+					<div class="logo-w3-agile">
+								<h1><a href="manage-users.php">Protection for woman using iot device</a></h1>
+							</div>
+				
+						
+						<div class="profile_details w3l">		
+								<ul>
+									<li class="dropdown profile_details_drop">
+										<a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+											<div class="profile_img">	
+												<span class="prfil-img"><img src="images/User-icon.png" alt=""> </span> 
+												<div class="user-name">
+													<p>Welcome</p>
+													<span>Administrator</span>
+												</div>
+												<i class="fa fa-angle-down"></i>
+												<i class="fa fa-angle-up"></i>
+												<div class="clearfix"></div>	
+											</div>	
+										</a>
+										<ul class="dropdown-menu drp-mnu">
+											<li> <a href="change-password.php"><i class="fa fa-lock"></i> Setting</a> </li> 
+											<li> <a href="logout.php"><i class="fa fa-sign-out"></i> Logout</a> </li>
+										</ul>
+									</li>
+								</ul>
+							</div>
+							
+				     <div class="clearfix"> </div>	
+				</div>
+
+
+
+
+2. CONFIGURATION
+
+<?php 
+// DB credentials.
+define('DB_HOST','localhost');
+define('DB_USER','admin');
+define('DB_PASS','root');
+define('DB_NAME','tms');
+// Establish database connection.
+try
+{
+$dbh = new PDO("mysql:host=".DB_HOST.";dbname=".DB_NAME,DB_USER, DB_PASS,array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8'"));
+}
+catch (PDOException $e)
+{
+exit("Error: " . $e->getMessage());
+}
+?>
+
+
+
+
+
+3.SIDE BAR
+
+<div class="sidebar-menu">
+					<header class="logo1">
+						<a href="#" class="sidebar-icon"> <span class="fa fa-bars"></span> </a> 
+					</header>
+						<div style="border-top:1px ridge rgba(255, 255, 255, 0.15)"></div>
+                           <div class="menu">
+									<ul id="menu" >
+																				
+									<li id="menu-academico" ><a href="manage-users.php"><i class="fa fa-users" aria-hidden="true"></i><span>Location</span><div class="clearfix"></div></a></li>
+
+<li id="menu-academico" ><a href="mymap.html"><i class="fa fa-users" aria-hidden="true"></i><span>Map</span><div class="clearfix"></div></a></li>
+
+									
+																		
+								  </ul>
+								</div>
+							  </div>
+
+
+4. FOOTER
+
+<div class="copyrights">
+	 <p>©   <a href="#">TMS</a> </p>
+</div>
